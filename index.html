@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="コミシェル - もう、何巻か迷わない。漫画の所持巻を管理するAndroidアプリ">
+<title>コミシェル | Comishel — もう、何巻か迷わない。</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700;900&family=Playfair+Display:wght@700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:      #FAF6FF;
+    --surface: #EDE7F6;
+    --accent:  #6B4FA8;
+    --accent2: #C8A8E0;
+    --text:    #2C2825;
+    --sub:     #7C756C;
+    --green:   #4A7C59;
+    --red:     #9B4444;
+    --gold:    #C49A3C;
+    --white:   #ffffff;
+  }
+
+  * { margin:0; padding:0; box-sizing:border-box; }
+
+  body {
+    font-family: 'Noto Sans JP', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    overflow-x: hidden;
+  }
+
+  /* ── ヒーロー ── */
+  .hero {
+    min-height: 100vh;
+    background: linear-gradient(160deg, #1a0a2e 0%, #2d1060 50%, #4a1080 100%);
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 60px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(ellipse at 30% 50%, rgba(200,168,224,0.15) 0%, transparent 60%),
+                radial-gradient(ellipse at 70% 30%, rgba(107,79,168,0.2) 0%, transparent 50%);
+  }
+
+  /* 本棚アニメーション */
+  .bookshelf {
+    display: flex; gap: 8px; align-items: flex-end;
+    margin-bottom: 48px;
+    position: relative; z-index: 1;
+  }
+
+  .book {
+    border-radius: 4px 8px 8px 4px;
+    position: relative;
+    animation: bookrise 0.6s ease backwards;
+    cursor: default;
+    transition: transform 0.2s;
+  }
+  .book:hover { transform: translateY(-8px); }
+  .book::after {
+    content: '';
+    position: absolute; top:0; left:0; bottom:0;
+    width: 6px;
+    background: rgba(0,0,0,0.2);
+    border-radius: 4px 0 0 4px;
+  }
+
+  @keyframes bookrise {
+    from { opacity:0; transform: translateY(30px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .b1 { width:28px; height:90px;  background:#F4A7A7; animation-delay:0.1s; }
+  .b2 { width:24px; height:110px; background:#A8D8C0; animation-delay:0.2s; }
+  .b3 { width:20px; height:80px;  background:#F9E08A; animation-delay:0.3s; }
+  .b4 { width:26px; height:120px; background:#A8C8F0; animation-delay:0.4s; }
+  .b5 { width:22px; height:95px;  background:#C8A8E0; animation-delay:0.5s; }
+  .b6 { width:18px; height:75px;  background:#F8C4A0; animation-delay:0.6s; }
+  .b7 { width:24px; height:105px; background:#A8D8C0; animation-delay:0.7s; }
+  .b8 { width:20px; height:85px;  background:#F4A7A7; animation-delay:0.8s; }
+
+  .shelf-base {
+    position: absolute; bottom:-8px; left:-16px; right:-16px;
+    height: 10px; background: #C8A8E0; border-radius: 3px;
+    opacity: 0.7;
+  }
+
+  .hero-content { position: relative; z-index:1; text-align: center; }
+
+  .app-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2);
+    border-radius: 20px; padding: 6px 16px;
+    font-size: 12px; color: var(--accent2);
+    letter-spacing: 2px; margin-bottom: 24px;
+    backdrop-filter: blur(10px);
+  }
+
+  .hero h1 {
+    font-family: 'Noto Sans JP', sans-serif;
+    font-size: clamp(42px, 10vw, 72px);
+    font-weight: 900;
+    color: #fff;
+    letter-spacing: -2px;
+    line-height: 1.1;
+    margin-bottom: 16px;
+    animation: fadein 0.8s ease 0.3s backwards;
+  }
+
+  .hero h1 span {
+    background: linear-gradient(90deg, #C8A8E0, #F4A7A7, #F9E08A);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+  }
+
+  .catchcopy {
+    font-size: clamp(14px, 3vw, 18px);
+    color: rgba(255,255,255,0.7);
+    margin-bottom: 12px;
+    animation: fadein 0.8s ease 0.5s backwards;
+  }
+
+  .sub-copy {
+    font-size: 13px; color: rgba(255,255,255,0.4);
+    margin-bottom: 40px;
+    animation: fadein 0.8s ease 0.6s backwards;
+  }
+
+  @keyframes fadein {
+    from { opacity:0; transform: translateY(20px); }
+    to   { opacity:1; transform: translateY(0); }
+  }
+
+  .btn-group {
+    display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+    animation: fadein 0.8s ease 0.7s backwards;
+  }
+
+  .btn-primary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: linear-gradient(135deg, #C8A8E0, #9b6fd4);
+    color: #fff; border: none; border-radius: 50px;
+    padding: 16px 32px; font-size: 16px; font-weight: 700;
+    text-decoration: none; cursor: pointer;
+    box-shadow: 0 8px 32px rgba(107,79,168,0.4);
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .btn-primary:hover { transform: translateY(-2px); box-shadow: 0 12px 40px rgba(107,79,168,0.5); }
+
+  .btn-secondary {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: transparent; color: rgba(255,255,255,0.8);
+    border: 1px solid rgba(255,255,255,0.3); border-radius: 50px;
+    padding: 16px 32px; font-size: 16px; font-weight: 600;
+    text-decoration: none; cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans JP', sans-serif;
+  }
+  .btn-secondary:hover { background: rgba(255,255,255,0.1); }
+
+  /* ── 特徴セクション ── */
+  .features {
+    padding: 100px 20px;
+    background: var(--bg);
+  }
+
+  .section-label {
+    text-align: center; font-size: 12px; font-weight: 700;
+    color: var(--accent); letter-spacing: 3px;
+    margin-bottom: 16px;
+  }
+
+  .section-title {
+    text-align: center; font-size: clamp(24px,5vw,40px); font-weight: 900;
+    color: var(--text); margin-bottom: 60px; line-height: 1.3;
+  }
+
+  .features-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 24px; max-width: 1000px; margin: 0 auto;
+  }
+
+  .feature-card {
+    background: var(--white); border: 1px solid #E2DDD6;
+    border-radius: 20px; padding: 32px;
+    transition: all 0.2s;
+    position: relative; overflow: hidden;
+  }
+  .feature-card::before {
+    content: ''; position: absolute; top:0; left:0; right:0; height:3px;
+    border-radius: 20px 20px 0 0;
+  }
+  .feature-card:nth-child(1)::before { background: linear-gradient(90deg,#F4A7A7,#F9E08A); }
+  .feature-card:nth-child(2)::before { background: linear-gradient(90deg,#A8C8F0,#C8A8E0); }
+  .feature-card:nth-child(3)::before { background: linear-gradient(90deg,#A8D8C0,#F9E08A); }
+  .feature-card:nth-child(4)::before { background: linear-gradient(90deg,#C8A8E0,#F4A7A7); }
+  .feature-card:hover { transform: translateY(-4px); box-shadow: 0 12px 40px rgba(0,0,0,0.08); }
+
+  .feature-icon { font-size: 40px; margin-bottom: 16px; display: block; }
+  .feature-title { font-size: 18px; font-weight: 700; margin-bottom: 10px; color: var(--text); }
+  .feature-desc { font-size: 14px; color: var(--sub); line-height: 1.8; }
+
+  /* ── スクリーンショット風 ── */
+  .demo-section {
+    padding: 80px 20px;
+    background: linear-gradient(180deg, #f0e8ff 0%, var(--bg) 100%);
+  }
+
+  .phone-mockup {
+    max-width: 300px; margin: 40px auto 0;
+    background: #1a0a2e; border-radius: 40px;
+    padding: 16px; box-shadow: 0 40px 80px rgba(107,79,168,0.3);
+  }
+
+  .phone-screen {
+    background: #FAF6FF; border-radius: 28px; overflow: hidden;
+    padding: 16px;
+  }
+
+  .phone-header {
+    background: #EDE7F6; border-radius: 16px; padding: 12px 16px;
+    margin-bottom: 12px;
+  }
+  .phone-title { font-size: 18px; font-weight: 900; color: #6B4FA8; }
+  .phone-sub { font-size: 10px; color: #B0A9D0; margin-top: 2px; }
+
+  .phone-stats {
+    display: grid; grid-template-columns: repeat(4,1fr); gap:6px; margin-bottom:12px;
+  }
+  .phone-stat {
+    background: #fff; border: 1px solid #E2DDD6; border-radius:10px;
+    padding: 8px 4px; text-align:center;
+  }
+  .phone-stat-val { font-size: 14px; font-weight: 900; }
+  .phone-stat-lbl { font-size: 8px; color: #B0A9D0; }
+
+  .phone-book {
+    background: #fff; border: 1px solid #E2DDD6; border-radius: 12px;
+    padding: 12px; margin-bottom: 8px; display: flex; gap: 10px; align-items: center;
+  }
+  .phone-book-icon { font-size: 24px; width: 40px; height: 40px; background:#EDE7F6; border-radius:8px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+  .phone-book-title { font-size: 13px; font-weight: 700; color: #2C2825; }
+  .phone-book-sub { font-size: 10px; color: #B0A9D0; margin-top: 2px; }
+  .phone-bar-bg { height:4px; background:#EDE7F6; border-radius:2px; margin-top:6px; overflow:hidden; }
+  .phone-bar-fill { height:100%; border-radius:2px; }
+
+  /* ── ダウンロードCTA ── */
+  .cta-section {
+    padding: 100px 20px;
+    background: linear-gradient(135deg, #1a0a2e, #4a1080);
+    text-align: center;
+  }
+
+  .cta-section h2 {
+    font-size: clamp(28px,6vw,52px); font-weight: 900;
+    color: #fff; margin-bottom: 16px; line-height: 1.2;
+  }
+
+  .cta-section p { font-size: 16px; color: rgba(255,255,255,0.6); margin-bottom: 40px; }
+
+  .play-badge {
+    display: inline-flex; align-items: center; gap: 12px;
+    background: #fff; color: #1a0a2e;
+    border-radius: 16px; padding: 16px 28px;
+    font-size: 18px; font-weight: 700;
+    text-decoration: none;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.3);
+    transition: all 0.2s;
+  }
+  .play-badge:hover { transform: scale(1.04); }
+  .play-badge-sub { font-size: 11px; font-weight: 400; color: #7C756C; display:block; text-align:left; }
+  .play-badge-main { font-size: 20px; font-weight: 900; display:block; text-align:left; }
+
+  /* ── フッター ── */
+  footer {
+    background: #0d0520; color: rgba(255,255,255,0.4);
+    padding: 40px 20px; text-align: center; font-size: 12px;
+  }
+  footer a { color: rgba(255,255,255,0.5); text-decoration: none; margin: 0 12px; }
+
+  /* ── スクロールアニメ ── */
+  .fade-up {
+    opacity: 0; transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+  }
+  .fade-up.visible { opacity:1; transform:translateY(0); }
+</style>
+</head>
+<body>
+
+<!-- ヒーロー -->
+<section class="hero">
+  <div class="bookshelf" style="position:relative;">
+    <div class="book b1"></div>
+    <div class="book b2"></div>
+    <div class="book b3"></div>
+    <div class="book b4"></div>
+    <div class="book b5"></div>
+    <div class="book b6"></div>
+    <div class="book b7"></div>
+    <div class="book b8"></div>
+    <div class="shelf-base"></div>
+  </div>
+  <div class="hero-content">
+    <div class="app-badge">📚 COMISHEL · コミシェル</div>
+    <h1>もう、<span>何巻か</span><br>迷わない。</h1>
+    <p class="catchcopy">あなたの漫画コレクションを、スマートに管理。</p>
+    <p class="sub-copy">所持巻の見える化 · 不足巻の購入リンク · AI提案 · ISBN検索</p>
+    <div class="btn-group">
+      <a href="https://play.google.com/store/apps/details?id=com.comishel.app" class="btn-primary">
+        🎮 Google Play でダウンロード
+      </a>
+      <a href="#features" class="btn-secondary">
+        機能を見る →
+      </a>
+    </div>
+  </div>
+</section>
+
+<!-- 特徴 -->
+<section class="features" id="features">
+  <p class="section-label fade-up">FEATURES</p>
+  <h2 class="section-title fade-up">コミシェルでできること</h2>
+  <div class="features-grid">
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📊</span>
+      <h3 class="feature-title">所持巻を一目で確認</h3>
+      <p class="feature-desc">カラーグリッドで持っている巻・持っていない巻を視覚的に管理。何巻が抜けているか一目瞭然です。</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🛒</span>
+      <h3 class="feature-title">不足巻をすぐ購入</h3>
+      <p class="feature-desc">未所持の巻ごとにAmazonの購入リンクが自動生成。不足巻をタップするだけでそのまま買えます。</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📖</span>
+      <h3 class="feature-title">ISBNで簡単登録</h3>
+      <p class="feature-desc">本の裏表紙のISBNを入力するだけで書籍情報を自動取得。タイトル・著者・出版社が自動で入力されます。</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">✨</span>
+      <h3 class="feature-title">AIが漫画を提案</h3>
+      <p class="feature-desc">「泣ける」「バトル少なめ」などのタグを選ぶだけで、AIがあなたの好みに合った漫画を提案します。</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">📂</span>
+      <h3 class="feature-title">自由な分類管理</h3>
+      <p class="feature-desc">出版社・作者別の自動分類に加え、「お気に入り」「読みたいリスト」など自分だけのカテゴリーが作れます。</p>
+    </div>
+    <div class="feature-card fade-up">
+      <span class="feature-icon">🔍</span>
+      <h3 class="feature-title">ひらがな・カタカナ検索</h3>
+      <p class="feature-desc">「わんぴ」でONE PIECEが検索できる賢い検索機能。英語タイトルも日本語読みで検索できます。</p>
+    </div>
+  </div>
+</section>
+
+<!-- デモ -->
+<section class="demo-section">
+  <p class="section-label fade-up">APP PREVIEW</p>
+  <h2 class="section-title fade-up">シンプルで使いやすいデザイン</h2>
+  <div class="phone-mockup fade-up">
+    <div class="phone-screen">
+      <div class="phone-header">
+        <div class="phone-title">コミシェル</div>
+        <div class="phone-sub">6作品　147/201巻　☁️ 同期済み</div>
+      </div>
+      <div class="phone-stats">
+        <div class="phone-stat"><div class="phone-stat-val" style="color:#4A5568">6</div><div class="phone-stat-lbl">作品数</div></div>
+        <div class="phone-stat"><div class="phone-stat-val" style="color:#4A7C59">147</div><div class="phone-stat-lbl">所持巻</div></div>
+        <div class="phone-stat"><div class="phone-stat-val" style="color:#9B4444">54</div><div class="phone-stat-lbl">未所持</div></div>
+        <div class="phone-stat"><div class="phone-stat-val" style="color:#8B7355">73%</div><div class="phone-stat-lbl">達成率</div></div>
+      </div>
+      <div class="phone-book">
+        <div class="phone-book-icon">⚔️</div>
+        <div style="flex:1">
+          <div class="phone-book-title">ONE PIECE</div>
+          <div class="phone-book-sub">尾田栄一郎　集英社　少年</div>
+          <div class="phone-bar-bg"><div class="phone-bar-fill" style="width:50%;background:#7B6E5C"></div></div>
+        </div>
+        <div style="font-size:11px;color:#B0A9D0">55/110巻</div>
+      </div>
+      <div class="phone-book">
+        <div class="phone-book-icon">⚔️</div>
+        <div style="flex:1">
+          <div class="phone-book-title">鬼滅の刃</div>
+          <div class="phone-book-sub">吾峠呼世晴　集英社　少年</div>
+          <div class="phone-bar-bg"><div class="phone-bar-fill" style="width:100%;background:#7A5C5C"></div></div>
+        </div>
+        <div style="font-size:11px;color:#4A7C59">✓完</div>
+      </div>
+      <div class="phone-book">
+        <div class="phone-book-icon">👁️</div>
+        <div style="flex:1">
+          <div class="phone-book-title">呪術廻戦</div>
+          <div class="phone-book-sub">芥見下々　集英社　少年</div>
+          <div class="phone-bar-bg"><div class="phone-bar-fill" style="width:63%;background:#5C6B7A"></div></div>
+        </div>
+        <div style="font-size:11px;color:#9B4444">⚠10巻不足</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <h2 class="fade-up">今すぐ無料で<br>はじめよう</h2>
+  <p class="fade-up">もう、何巻か迷わない。</p>
+  <a href="https://play.google.com/store/apps/details?id=com.comishel.app" class="play-badge fade-up">
+    <span style="font-size:36px">▶</span>
+    <div>
+      <span class="play-badge-sub">Google Play で手に入れよう</span>
+      <span class="play-badge-main">コミシェル</span>
+    </div>
+  </a>
+</section>
+
+<!-- フッター -->
+<footer>
+  <p style="margin-bottom:12px">
+    <a href="#">プライバシーポリシー</a>
+    <a href="#">お問い合わせ</a>
+  </p>
+  <p>© 2026 Comishel. All rights reserved.</p>
+</footer>
+
+<script>
+// スクロールアニメーション
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+}, { threshold: 0.1 });
+document.querySelectorAll('.fade-up').forEach(el => observer.observe(el));
+
+// スムーススクロール
+document.querySelector('[href="#features"]').addEventListener('click', e => {
+  e.preventDefault();
+  document.querySelector('#features').scrollIntoView({ behavior:'smooth' });
+});
+</script>
+</body>
+</html>
